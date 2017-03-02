@@ -41,7 +41,9 @@ using System.Linq;
 #endif
 using System.Text;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Tests.TestObjects;
+using Newtonsoft.Json.Utilities;
 #if NETFX_CORE
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
 using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
@@ -1561,7 +1563,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             });
 
             StringAssert.AreEqual(@"{
-  ""$type"": ""System.Collections.Generic.List`1[[Newtonsoft.Json.Tests.TestObjects.Event1[,], Newtonsoft.Json.Tests]], mscorlib"",
+  ""$type"": """ + ReflectionUtils.GetTypeName(typeof(List<Event1[,]>), 0, DefaultSerializationBinder.Instance) + @""",
   ""$values"": [
     {
       ""$type"": ""Newtonsoft.Json.Tests.TestObjects.Event1[,], Newtonsoft.Json.Tests"",
@@ -1917,6 +1919,86 @@ namespace Newtonsoft.Json.Tests.Serialization
             Assert.AreEqual(deserializeTest2["testkey"], "");
         }
 #endif
+
+        [Test]
+        public void DeserializeCollectionWithConstructorArrayArgument()
+        {
+            var v = new ReadOnlyCollectionWithArrayArgument<double>(new[] { -0.014147478859765236, -0.011419606805541858, -0.010038461483676238 });
+            var json = JsonConvert.SerializeObject(v);
+
+            ExceptionAssert.Throws<JsonSerializationException>(() =>
+            {
+                JsonConvert.DeserializeObject<ReadOnlyCollectionWithArrayArgument<double>>(json);
+            }, "Unable to find a constructor to use for type Newtonsoft.Json.Tests.Serialization.ReadOnlyCollectionWithArrayArgument`1[System.Double]. Path '', line 1, position 1.");
+        }
+    }
+
+    public class ReadOnlyCollectionWithArrayArgument<T> : IList<T>
+    {
+        private readonly IList<T> _values;
+
+        public ReadOnlyCollectionWithArrayArgument(T[] args)
+        {
+            _values = args ?? (IList<T>)new List<T>();
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return _values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _values.GetEnumerator();
+        }
+
+        public void Add(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Contains(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Remove(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int Count { get; }
+        public bool IsReadOnly { get; }
+        public int IndexOf(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Insert(int index, T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T this[int index]
+        {
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
+        }
     }
 
 #if !(NET40 || NET35 || NET20 || PORTABLE40)

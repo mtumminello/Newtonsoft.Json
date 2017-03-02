@@ -24,6 +24,7 @@ using NUnit.Framework;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Tests.TestObjects;
+using Newtonsoft.Json.Utilities;
 #if NET20
 using Newtonsoft.Json.Utilities.LinqBridge;
 #else
@@ -551,12 +552,12 @@ Newtonsoft.Json Error: 0 : Error!
             });
 
             Assert.AreEqual("Started serializing System.Collections.Generic.List`1[System.Object]. Path ''.", traceWriter.TraceRecords[0].Message);
-            Assert.AreEqual("Writing type name 'System.Collections.Generic.List`1[[System.Object, mscorlib]], mscorlib' for System.Collections.Generic.List`1[System.Object]. Path ''.", traceWriter.TraceRecords[1].Message);
+            Assert.AreEqual("Writing type name '" + ReflectionUtils.GetTypeName(typeof(List<object>), 0, DefaultSerializationBinder.Instance) + "' for System.Collections.Generic.List`1[System.Object]. Path ''.", traceWriter.TraceRecords[1].Message);
             Assert.AreEqual("Started serializing System.Collections.Generic.Dictionary`2[System.String,System.String]. Path '$values'.", traceWriter.TraceRecords[2].Message);
-            Assert.AreEqual("Writing type name 'System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[System.String, mscorlib]], mscorlib' for System.Collections.Generic.Dictionary`2[System.String,System.String]. Path '$values[0]'.", traceWriter.TraceRecords[3].Message);
+            Assert.AreEqual("Writing type name '" + ReflectionUtils.GetTypeName(typeof(Dictionary<string, string>), 0, DefaultSerializationBinder.Instance) + "' for System.Collections.Generic.Dictionary`2[System.String,System.String]. Path '$values[0]'.", traceWriter.TraceRecords[3].Message);
             Assert.AreEqual("Finished serializing System.Collections.Generic.Dictionary`2[System.String,System.String]. Path '$values[0]'.", traceWriter.TraceRecords[4].Message);
             Assert.AreEqual("Started serializing System.Version. Path '$values[0]'.", traceWriter.TraceRecords[5].Message);
-            Assert.AreEqual("Writing type name 'System.Version, mscorlib' for System.Version. Path '$values[1]'.", traceWriter.TraceRecords[6].Message);
+            Assert.AreEqual("Writing type name '" + ReflectionUtils.GetTypeName(typeof(Version), 0, DefaultSerializationBinder.Instance) + "' for System.Version. Path '$values[1]'.", traceWriter.TraceRecords[6].Message);
             Assert.AreEqual("Finished serializing System.Version. Path '$values[1]'.", traceWriter.TraceRecords[7].Message);
             Assert.AreEqual("Finished serializing System.Collections.Generic.List`1[System.Object]. Path ''.", traceWriter.TraceRecords[8].Message);
         }
@@ -733,7 +734,7 @@ Newtonsoft.Json Error: 0 : Error!
         }
 
         [Test]
-        public void PublicParametizedConstructorWithPropertyNameConflictWithAttribute()
+        public void PublicParameterizedConstructorWithPropertyNameConflictWithAttribute()
         {
             InMemoryTraceWriter traceWriter = new InMemoryTraceWriter
             {
@@ -742,7 +743,7 @@ Newtonsoft.Json Error: 0 : Error!
 
             string json = @"{name:""1""}";
 
-            PublicParametizedConstructorWithPropertyNameConflictWithAttribute c = JsonConvert.DeserializeObject<PublicParametizedConstructorWithPropertyNameConflictWithAttribute>(json, new JsonSerializerSettings
+            PublicParameterizedConstructorWithPropertyNameConflictWithAttribute c = JsonConvert.DeserializeObject<PublicParameterizedConstructorWithPropertyNameConflictWithAttribute>(json, new JsonSerializerSettings
             {
                 TraceWriter = traceWriter
             });
@@ -750,7 +751,7 @@ Newtonsoft.Json Error: 0 : Error!
             Assert.IsNotNull(c);
             Assert.AreEqual(1, c.Name);
 
-            Assert.AreEqual("Deserializing Newtonsoft.Json.Tests.TestObjects.PublicParametizedConstructorWithPropertyNameConflictWithAttribute using creator with parameters: name. Path 'name', line 1, position 6.", traceWriter.TraceRecords[0].Message);
+            Assert.AreEqual("Deserializing Newtonsoft.Json.Tests.TestObjects.PublicParameterizedConstructorWithPropertyNameConflictWithAttribute using creator with parameters: name. Path 'name', line 1, position 6.", traceWriter.TraceRecords[0].Message);
         }
 
         [Test]
